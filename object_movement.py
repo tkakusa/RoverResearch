@@ -4,6 +4,9 @@
 
 # import the necessary packages
 from collections import deque
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
 import numpy as np
 import argparse
 import imutils
@@ -27,23 +30,27 @@ greenUpper = (64, 255, 255)
 pts = deque(maxlen=args["buffer"])
 counter = 0
 (dX, dY) = (0, 0)
-(X, Y) = (0,0)
 direction = ""
-radius = 0
 
 # if a video path was not supplied, grab the reference
 # to the webcam
 if not args.get("video", False):
-	camera = cv2.VideoCapture(0)
-
+	camera = PiCamera()
+	camera.resolution = (640, 480)
+	camera.framerate = 32
+	rawCapture = PiRGBArray(camera, size=(640, 480))
 # otherwise, grab a reference to the video file
 else:
 	camera = cv2.VideoCapture(args["video"])
 
+# allow the camera to warmup
+time.sleep(0.1)
+
+
 # keep looping
-while True:
+for image in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 	# grab the current frame
-	(grabbed, frame) = camera.read()
+	frame = image.array
 
 	# if we are viewing a video and we did not grab a frame,
 	# then we have reached the end of the video
@@ -52,7 +59,7 @@ while True:
 
 	# resize the frame, blur it, and convert it to the HSV
 	# color space
-	#frame = imutils.resize(frame, width=600)
+	frame = imutils.resize(frame, width=600)
 	# blurred = cv2.GaussianBlur(frame, (11, 11), 0)
 	hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -79,8 +86,6 @@ while True:
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-		print (radius)
-
 		# only proceed if the radius meets a minimum size
 		if radius > 10:
 			# draw the circle and centroid on the frame,
@@ -105,21 +110,18 @@ while True:
 			# text variables
 			dX = pts[-10][0] - pts[i][0]
 			dY = pts[-10][1] - pts[i][1]
-			X = pts[i][0]
-			Y = pts[i][1]
 			(dirX, dirY) = ("", "")
 
-			# ensure that the object stays within the frame
+			# ensure there is significant movement in the
 			# x-direction
-			if np.abs(X) < 100:
-				dirX = "Left"
-			elif np.abs(X) > 500:
-				dirX = "Right"
+			if np.abs(dX) > 20:
+				dirX = "East" if np.sign(dX) == 1 else "West"
+
+			# ensure there is significant movement in the
 			# y-direction
-			if np.abs(Y) < 50:
-				dirY = "Up"
-			elif np.abs(Y) > 400:
-				dirY = "Down"
+			if np.abs(dY) > 20:
+				dirY = "North" if np.sign(dY) == 1 else "South"
+
 			# handle when both directions are non-empty
 			if dirX != "" and dirY != "":
 				direction = "{}-{}".format(dirY, dirX)
@@ -137,7 +139,7 @@ while True:
 	# the frame
 	cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
 		0.65, (0, 0, 255), 3)
-	cv2.putText(frame, "x: {}, y: {}".format(X, Y),
+	cv2.putText(frame, "dx: {}, dy: {}".format(dX, dY),
 		(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
 		0.35, (0, 0, 255), 1)
 
@@ -146,9 +148,8 @@ while True:
 	key = cv2.waitKey(1) & 0xFF
 	counter += 1
 
-	# if radius is too large, stop the loop
-	if radius >= 100:
-		break
+	# clear the stream in preparation for the next frame
+	rawCapture.truncate(0)
 
 	# if the 'q' key is pressed, stop the loop
 	if key == ord("q"):
