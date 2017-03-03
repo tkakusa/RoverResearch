@@ -4,6 +4,9 @@
 
 # import the necessary packages
 from collections import deque
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
 import numpy as np
 import argparse
 import imutils
@@ -33,10 +36,17 @@ def capture():
     radius = 0
 
     # grab the reference to the webcam
-    camera = cv2.VideoCapture(0)
+    camera = PiCamera()
+    camera.resolution = (640, 480)
+    camera.framerate = 32
+    rawCapture = PiRGBArray(camera, size=(640, 480))
 
+    image = ''
+    for i in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+        image = i
+        break
     # grab the current frame
-    (grabbed, frame) = camera.read()
+    frame = image.array
 
     # resize the frame, blur it, and convert it to the HSV
     # color space
@@ -68,15 +78,13 @@ def capture():
             M = cv2.moments(c)
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
+    # cleanup the camera and close any open windows
+    camera.close()
 
     if radius > 0:
         return True
     else:
         return False
-
-    # cleanup the camera and close any open windows
-    camera.release()
-    cv2.destroyAllWindows()
 
 def getLocation():
     # construct the argument parse and parse the arguments
@@ -102,10 +110,18 @@ def getLocation():
     radius = 0
 
     # grab the reference to the webcam
-    camera = cv2.VideoCapture(0)
+    camera = PiCamera()
+    camera.resolution = (640, 480)
+    camera.framerate = 32
+    rawCapture = PiRGBArray(camera, size=(640, 480))
 
+    image = ''
+    for i in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+        image = i
+        break
+        
     # grab the current frame
-    (grabbed, frame) = camera.read()
+    frame = image.array
 
     # resize the frame, blur it, and convert it to the HSV
     # color space
@@ -137,15 +153,15 @@ def getLocation():
             M = cv2.moments(c)
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-
+    # cleanup the camera and close any open windows
+    camera.close()
+    
     if radius > 0:
         return (x, y)
     else:
         return (-1,-1)
 
-    # cleanup the camera and close any open windows
-    camera.release()
-    cv2.destroyAllWindows()
+    
 
 if capture():
     print(getLocation())
