@@ -28,6 +28,7 @@ greenUpper = (64, 255, 255)
 # initialize the list of tracked points, the frame counter,
 # and the coordinate deltas
 pts = deque(maxlen=args["buffer"])
+print (len(pts))
 counter = 0
 (dX, dY) = (0, 0)
 direction = ""
@@ -104,7 +105,7 @@ for image in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
 		# check to see if enough points have been accumulated in
 		# the buffer
-		if counter >= 10 and i == 1 and pts[-10] is not None:
+		if counter >= 10 and i == 1 and len(pts) >= 10 and pts[-10] is not None:
 			# compute the difference between the x and y
 			# coordinates and re-initialize the direction
 			# text variables
@@ -156,5 +157,5 @@ for image in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 		break
 
 # cleanup the camera and close any open windows
-camera.release()
+camera.close()
 cv2.destroyAllWindows()
