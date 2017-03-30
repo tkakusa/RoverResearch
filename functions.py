@@ -5,15 +5,15 @@ import smbus
 import time
 import math
 
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
 
-Motor1A = 23
-Motor1B = 24
-Motor1E = 25
+Motor1A = 37
+Motor1B = 35
+Motor1E = 33
 
-Motor2A = 10
-Motor2B = 9
-Motor2E = 11
+Motor2A = 12
+Motor2B = 16
+Motor2E = 18
 
 GPIO.setup(Motor1A,GPIO.OUT)
 GPIO.setup(Motor1B,GPIO.OUT)
@@ -71,6 +71,18 @@ def Initialize():
 def Cleanup():
     GPIO.cleanup()
 
+def SlightTurn(direction):
+    if direction == "Left":
+        GPIO.output(Motor1A,GPIO.LOW)
+        GPIO.output(Motor1B,GPIO.HIGH)
+        motorR.ChangeDutyCycle(80)
+        motorL.ChangeDutyCycle(0)
+    elif direction == "Right":
+        GPIO.output(Motor1A,GPIO.LOW)
+        GPIO.output(Motor1B,GPIO.HIGH)
+        motorR.ChangeDutyCycle(0)
+        motorL.ChangeDutyCycle(80)
+        
 def Turn(direction):
     curr_bearing = GetBearing()
     #print("Curr Bearing %f" % curr_bearing)
@@ -125,8 +137,10 @@ def Turn(direction):
     GPIO.output(Motor2E,GPIO.LOW)
 
 def Stop():
-    GPIO.output(Motor1E,GPIO.LOW)
-    GPIO.output(Motor2E,GPIO.LOW)
+    motorR.ChangeDutyCycle(0)
+    motorL.ChangeDutyCycle(0)
+    #GPIO.output(Motor1E,GPIO.LOW)
+    #GPIO.output(Motor2E,GPIO.LOW)
 
 def GetBearing():
     write_byte(0, 0b01111000) # Set to 8 samples @ 15Hz
@@ -169,7 +183,8 @@ def AdjustMovement (correct_bearing):
         return 1
     return 0
 
-def MoveForward(bearing, seconds = 0):
+def MoveForward():#bearing, seconds = 0):
+    '''
     if (seconds == 0):
         if (AdjustMovement(bearing)):
             pass
@@ -198,7 +213,13 @@ def MoveForward(bearing, seconds = 0):
                 time.sleep(0.1)
  #               Stop()
         Stop()
+        '''
+    GPIO.output(Motor1E,GPIO.HIGH)
 
+    GPIO.output(Motor2E,GPIO.HIGH)
+    motorR.ChangeDutyCycle(100)
+    motorL.ChangeDutyCycle(100)
+    
 def GetDistance():
     GPIO.output(TRIG,1)
     time.sleep(0.00001)

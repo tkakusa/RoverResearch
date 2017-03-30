@@ -29,6 +29,8 @@ q1.start(0)
 p2.start(0)
 q2.start(0)
 
+time.sleep(0.1)
+
 def Initialize():
     GPIO.setup(Motor1A,GPIO.OUT)
     GPIO.setup(Motor1B,GPIO.OUT)
@@ -58,9 +60,11 @@ def Stop():
 
 def MoveForward(seconds = 0):
     GPIO.output(Motor1E,GPIO.HIGH)
+
     GPIO.output(Motor2E,GPIO.HIGH)
     p1.ChangeDutyCycle(100)
     p2.ChangeDutyCycle(100)
+    print("in")
     time.sleep(5)
 
 
