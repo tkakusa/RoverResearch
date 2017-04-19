@@ -246,22 +246,6 @@ def continuousFollow():
 
                     print (radius)
 
-            if radius > 60:
-                print("Too close")
-                Stop()
-            elif x < 70 and x > 0:
-                print("left")
-                SlightTurn("Left")
-            elif x > 520:
-                print("right")
-                SlightTurn("Right")
-            elif len(cnts) > 0:
-                print("forward")
-                MoveForward()
-            else:
-                print("Nothing")
-                Stop()
-
             # show the frame to our screen and increment the frame counter
             key = cv2.waitKey(1) & 0xFF
             counter += 1
@@ -273,6 +257,37 @@ def continuousFollow():
             if key == ord("q"):
                     break
 
+            
+            if x < 70 and x > 0:
+                print("left")
+                Stop()
+                time.sleep(.5)
+                SlightTurn("Left")
+                time.sleep(.5)
+                Stop()
+                time.sleep(.5)
+            elif x > 520:
+                print("right")
+                Stop()
+                time.sleep(.5)
+                SlightTurn("Right")
+                time.sleep(.3)
+                Stop()
+                time.sleep(.5)
+            elif radius > 70:
+                print("Too close")
+                Stop()
+                break
+            elif len(cnts) > 0:
+                print("forward")
+                MoveForward()
+            else:
+                print("Nothing")
+                Stop()
+
+            
+
     # cleanup the camera and close any open windows
     camera.close()
     cv2.destroyAllWindows()
+    Cleanup()
