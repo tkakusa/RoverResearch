@@ -31,6 +31,7 @@ pts = deque(maxlen=args["buffer"])
 print (len(pts))
 counter = 0
 (dX, dY) = (0, 0)
+(x, y) = (0, 0)
 direction = ""
 
 # if a video path was not supplied, grab the reference
@@ -86,6 +87,8 @@ for image in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+
+		print ((x,y))
 
 		# only proceed if the radius meets a minimum size
 		if radius > 10:
