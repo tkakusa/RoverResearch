@@ -217,7 +217,7 @@ def GetDistance():
     stop = time.time()
 
     #print ((stop - start) * 17000)
-    return ((stop - start) * 17000)            
+    return ((stop - start) * 17000)
 
 def GetDistance2():
     GPIO.output(TRIG2,1)
